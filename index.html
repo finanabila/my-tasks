@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>my tasks</title>
+<style>
+@font-face{font-family:'Avenir';src:local('Avenir Next'),local('Avenir'),local('Century Gothic');font-weight:300}
+@font-face{font-family:'Avenir';src:local('Avenir Next'),local('Avenir'),local('Century Gothic');font-weight:400}
+@font-face{font-family:'Avenir';src:local('Avenir Next Medium'),local('Avenir Medium'),local('Century Gothic');font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f5;
+  --surface:#ffffff;
+  --border:#ece5dc;
+  --text:#352e27;
+  --muted:#b0a090;
+  --accent:#c9a96e;
+  --lavender:#ddd6f3;
+  --lav-dark:#6b5fa0;
+  --mint:#c9e8d5;
+  --mint-dark:#3a7a5a;
+  --pink:#f5d0d8;
+  --pink-dark:#a05068;
+}
+body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+.container{max-width:900px;margin:0 auto;padding:2.5rem 1.25rem}
+
+.header{margin-bottom:1.75rem}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.site-title{font-size:34px;font-weight:600;color:var(--text);line-height:1.1;letter-spacing:-0.5px}
+.site-title em{font-style:italic;color:var(--accent);font-weight:300}
+.date-chip{display:inline-block;margin-top:8px;font-size:11px;color:var(--muted);letter-spacing:0.06em;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:3px 12px}
+
+.tabs{display:flex;gap:3px;background:var(--border);border-radius:30px;padding:3px;align-self:flex-start;margin-top:4px}
+.tab{padding:5px 16px;font-size:12px;font-family:inherit;border:none;background:transparent;border-radius:30px;cursor:pointer;color:var(--muted);transition:all 0.2s;letter-spacing:0.03em}
+.tab.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+
+.dashboard-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.dashboard-title{font-size:28px;font-weight:600;color:var(--text);letter-spacing:-0.3px}
+.dashboard-filters{display:flex;gap:8px;flex-wrap:wrap}
+.dashboard-filter{padding:6px 16px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:transparent;cursor:pointer;color:var(--muted);transition:all 0.2s;letter-spacing:0.03em;font-weight:500}
+.dashboard-filter.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+.filter-row{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
+.add-btn{margin-left:auto;padding:7px 16px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:var(--surface);cursor:pointer;color:var(--text);display:flex;align-items:center;gap:5px;font-weight:500;transition:all 0.2s;letter-spacing:0.03em}
+.add-btn:hover{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+.summary{display:flex;gap:8px;margin-bottom:1.25rem}
+.stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:3px;letter-spacing:0.07em;text-transform:uppercase}
+.stat-num{font-size:28px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+.stat-num.s-prog{color:var(--lav-dark)}
+.stat-num.s-done{color:var(--mint-dark)}
+
+.task-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:8px;transition:all 0.2s;position:relative;overflow:hidden}
+.task-card::after{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:var(--lavender)}
+.task-card.is-done::after{background:transparent}
+.task-card:hover{border-color:#d5ccc2;box-shadow:0 4px 20px rgba(0,0,0,0.05)}
+.task-inner{padding-left:12px}
+.task-header{display:flex;align-items:flex-start;gap:10px}
+.task-title{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.5;letter-spacing:0.01em}
+.task-title.done{text-decoration:line-through;color:var(--muted);font-weight:400}
+.badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:30px;white-space:nowrap;letter-spacing:0.02em}
+.badge-progress{background:var(--lavender);color:var(--lav-dark)}
+.badge-done{background:transparent;color:var(--muted);border:1px solid var(--muted)}
+.task-note{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6}
+.task-meta{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.task-date{font-size:11px;color:var(--muted);letter-spacing:0.02em}
+.action-btn{padding:3px 10px;font-size:11px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:transparent;cursor:pointer;color:var(--muted);transition:all 0.15s}
+.action-btn:hover{background:var(--bg);color:var(--text)}
+.delete-btn{padding:3px 10px;font-size:11px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:transparent;cursor:pointer;color:var(--muted);transition:all 0.15s}
+.delete-btn:hover{color:var(--pink-dark);border-color:var(--pink)}
+
+.nav-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.nav-btn{padding:5px 14px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:var(--surface);cursor:pointer;color:var(--muted);transition:all 0.15s}
+.nav-btn:hover{background:var(--text);color:var(--bg);border-color:var(--text)}
+.nav-label{font-size:16px;font-weight:500;color:var(--text);flex:1;text-align:center;letter-spacing:0.01em}
+
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:1rem}
+.day-col{min-height:280px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;overflow-y:auto}
+.day-col.day-today{border-color:var(--accent);background:#fffbf4}
+.day-header{font-size:11px;color:var(--muted);text-align:center;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;font-weight:500}
+.day-num{font-size:18px;font-weight:600;text-align:center;color:var(--text);margin-bottom:8px}
+.today-num{background:var(--accent);color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:600}
+.day-tasks{display:flex;flex-direction:column;gap:6px}
+.day-task-dot{font-size:11px;padding:6px 8px;border-radius:6px;line-height:1.3;word-wrap:break-word;white-space:normal;overflow:hidden;cursor:pointer;transition:all 0.2s}
+.day-task-dot:hover{transform:translateY(-2px);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.dot-progress{background:var(--lavender);color:var(--lav-dark)}
+.dot-done{background:transparent;color:var(--muted);text-decoration:line-through;border:1px solid var(--muted);font-weight:400}
+
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem}
+.month-day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.mcell{min-height:58px;border:1px solid var(--border);border-radius:10px;padding:5px 6px;background:var(--surface);overflow-y:auto}
+.mcell.today{border-color:var(--accent);background:#fffbf4}
+.mcell-num{font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:500}
+.mcell.today .mcell-num{color:var(--accent)}
+.other-month{opacity:0.28}
+
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--muted)}
+.empty-title{font-size:18px;font-weight:300;font-style:italic;color:#d5c8b8;margin-bottom:8px;letter-spacing:0.02em}
+.empty-state p{font-size:13px;line-height:1.7}
+
+.modal-bg{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(250,248,245,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.modal{position:relative;z-index:1;background:var(--surface);border-radius:22px;border:1px solid var(--border);padding:1.75rem;width:380px;max-width:94vw;box-shadow:0 8px 40px rgba(53,46,39,0.1)}
+.modal h2{font-size:24px;font-weight:600;color:var(--text);margin-bottom:1.25rem;letter-spacing:-0.3px}
+.modal h2 em{font-style:italic;color:var(--accent);font-weight:300}
+.form-group{margin-bottom:14px}
+.form-group label{font-size:10px;color:var(--muted);display:block;margin-bottom:5px;letter-spacing:0.07em;text-transform:uppercase}
+.form-group input,.form-group select,.form-group textarea{width:100%;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:10px;padding:9px 12px;background:var(--bg);color:var(--text);outline:none;transition:border 0.15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);background:var(--surface)}
+.form-group textarea{resize:vertical;min-height:68px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+.btn-cancel{padding:8px 18px;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:transparent;cursor:pointer;color:var(--muted)}
+.btn-save{padding:8px 22px;font-size:13px;font-family:inherit;border:none;border-radius:30px;background:var(--text);cursor:pointer;color:var(--bg);font-weight:500;transition:all 0.2s;letter-spacing:0.02em}
+.btn-save:hover{background:#5a4a3a}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1 class="site-title">my <em>tasks</em></h1>
+        <div class="date-chip">✓ Ready to use</div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchView('list')">Dashboard</button>
+        <button class="tab" onclick="switchView('week')">Weekly</button>
+        <button class="tab" onclick="switchView('month')">Monthly</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="modal-bg" id="modal">
+    <div class="modal-backdrop" onclick="closeModal()"></div>
+    <div class="modal">
+      <h2 id="modal-title">tambah <em>task</em></h2>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="f-title" placeholder="e.g. buat desain UI">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="on progress">On Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Note (optional)</label>
+        <textarea id="f-note" placeholder="Catatan tambahan..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="saveTask()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let tasks=[];
+let view='list';
+let dashboardFilter='all';
+let editId=null;
+let navDate=new Date();
+
+// Load dari localStorage
+function load(){
+  const stored=localStorage.getItem('mytasks');
+  tasks=stored?JSON.parse(stored):[
+    {id:'1',title:'Desain dashboard UI',date:'2025-05-06',status:'done',note:'Responsive layout'},
+    {id:'2',title:'Review kode tim',date:'2025-05-07',status:'on progress',note:''},
+    {id:'3',title:'Fix responsive layout',date:'2025-05-08',status:'on progress',note:''},
+    {id:'4',title:'Update portfolio',date:'2025-05-05',status:'done',note:''}
+  ];
+}
+
+// Save ke localStorage
+function save(){localStorage.setItem('mytasks',JSON.stringify(tasks))}
+
+function switchView(v){view=v;navDate=new Date();render()}
+function setDashboardFilter(f){dashboardFilter=f;render()}
+
+function filtered(){
+  return tasks.filter(t=>dashboardFilter==='all'||t.status===dashboardFilter).sort((a,b)=>a.date>b.date?1:-1);
+}
+
+function openModal(id){
+  editId=id||null;
+  if(id){
+    const t=tasks.find(x=>x.id===id);
+    document.getElementById('f-title').value=t.title;
+    document.getElementById('f-date').value=t.date;
+    document.getElementById('f-status').value=t.status;
+    document.getElementById('f-note').value=t.note||'';
+    document.getElementById('modal-title').innerHTML='edit <em>task</em>';
+  } else {
+    document.getElementById('f-title').value='';
+    document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('f-status').value='on progress';
+    document.getElementById('f-note').value='';
+    document.getElementById('modal-title').innerHTML='tambah <em>task</em>';
+  }
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>document.getElementById('f-title').focus(),60);
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+function saveTask(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){document.getElementById('f-title').focus();return}
+  
+  if(editId){
+    const t=tasks.find(x=>x.id===editId);
+    t.title=title;
+    t.date=document.getElementById('f-date').value;
+    t.status=document.getElementById('f-status').value;
+    t.note=document.getElementById('f-note').value.trim();
+  } else {
+    tasks.push({
+      id:Date.now()+'',
+      title,
+      date:document.getElementById('f-date').value,
+      status:document.getElementById('f-status').value,
+      note:document.getElementById('f-note').value.trim()
+    });
+  }
+  save();closeModal();render();
+}
+
+function deleteTask(id){
+  if(confirm('Hapus task ini?')){
+    tasks=tasks.filter(t=>t.id!==id);
+    save();render();
+  }
+}
+
+function toggleStatus(id){
+  const t=tasks.find(x=>x.id===id);
+  t.status=t.status==='done'?'on progress':'done';
+  save();render();
+}
+
+function render(){
+  const el=document.getElementById('content');
+  const total=tasks.length,done=tasks.filter(t=>t.status==='done').length,prog=tasks.filter(t=>t.status==='on progress').length;
+  let sum='';
+  if(total>0) sum=`<div class="summary"><div class="stat-card"><div class="stat-label">Total</div><div class="stat-num">${total}</div></div><div class="stat-card"><div class="stat-label">On progress</div><div class="stat-num s-prog">${prog}</div></div><div class="stat-card"><div class="stat-label">Done</div><div class="stat-num s-done">${done}</div></div></div>`;
+  if(view==='list') el.innerHTML=sum+renderList();
+  else if(view==='week') el.innerHTML=sum+renderWeek();
+  else el.innerHTML=sum+renderMonth();
+}
+
+function renderList(){
+  const ft=filtered();
+  let html=`<div class="dashboard-header"><span class="dashboard-title">Dashboard</span><div class="dashboard-filters"><button class="dashboard-filter ${dashboardFilter==='all'?'active':''}" onclick="setDashboardFilter('all')">All Tasks</button><button class="dashboard-filter ${dashboardFilter==='on progress'?'active':''}" onclick="setDashboardFilter('on progress')">On Progress</button><button class="dashboard-filter ${dashboardFilter==='done'?'active':''}" onclick="setDashboardFilter('done')">Done</button></div></div>`;
+  html+=`<div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div>`;
+  if(!ft.length) return html+`<div class="empty-state"><div class="empty-title">nothing here yet</div><p>klik "+ tambah task" untuk mulai<br>mencatat kegiatanmu ✨</p></div>`;
+  return html+ft.map(t=>`<div class="task-card${t.status==='done'?' is-done':''}">
+    <div class="task-inner">
+      <div class="task-header">
+        <div class="task-title${t.status==='done'?' done':''}">${esc(t.title)}</div>
+        <span class="badge ${t.status==='done'?'badge-done':'badge-progress'}">${t.status}</span>
+      </div>
+      ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
+      <div class="task-meta">
+        <span class="task-date">${fmt(t.date)}</span>
+        <button class="action-btn" onclick="toggleStatus('${t.id}')">${t.status==='done'?'↩ reopen':'✓ done'}</button>
+        <button class="action-btn" onclick="openModal('${t.id}')">edit</button>
+        <button class="delete-btn" onclick="deleteTask('${t.id}')">hapus</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function renderWeek(){
+  const base=new Date(navDate),dow=base.getDay();
+  const monday=new Date(base);monday.setDate(base.getDate()-dow);
+  const today=new Date().toISOString().slice(0,10);
+  const s=monday.toISOString().slice(0,10);
+  const e=new Date(monday.getTime()+6*86400000).toISOString().slice(0,10);
+  let html=`<div class="nav-row"><button class="nav-btn" onclick="navPrev('week')">← prev</button><span class="nav-label">${fmt(s)} – ${fmt(e)}</span><button class="nav-btn" onclick="navNext('week')">next →</button></div><div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div><div class="week-grid">`;
+  for(let i=0;i<7;i++){
+    const d=new Date(monday.getTime()+i*86400000);
+    const ds=d.toISOString().slice(0,10);
+    const isToday=ds===today;
+    const dt=tasks.filter(t=>t.date===ds).sort((a,b)=>a.status.localeCompare(b.status));
+    html+=`<div class="day-col${isToday?' day-today':''}"><div class="day-header">${DAYS[d.getDay()]}</div><div class="day-num">${isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate()}</div><div class="day-tasks">${dt.map(t=>`<div class="day-task-dot ${t.status==='done'?'dot-done':'dot-progress'}" title="${esc(t.title)}" onclick="openModal('${t.id}')">${esc(t.title)}</div>`).join('')}</div></div>`;
+  }
+  return html+`</div>`;
+}
+
+function renderMonth(){
+  const y=navDate.getFullYear(),m=navDate.getMonth();
+  const today=new Date().toISOString().slice(0,10);
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysInPrev=new Date(y,m,0).getDate();
+  let html=`<div class="nav-row"><button class="nav-btn" onclick="navPrev('month')">← prev</button><span class="nav-label">${MONTHS[m]} ${y}</span><button class="nav-btn" onclick="navNext('month')">next →</button></div><div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div>`;
+  html+=`<div class="month-day-headers">${DAYS.map(d=>`<div style="font-size:10px;text-align:center;color:var(--muted);padding:2px 0;letter-spacing:0.06em;text-transform:uppercase">${d}</div>`).join('')}</div>`;
+  html+=`<div class="month-grid">`;
+  for(let i=0;i<firstDay;i++) html+=`<div class="mcell other-month"><div class="mcell-num">${daysInPrev-firstDay+1+i}</div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===today;
+    const dt=tasks.filter(t=>t.date===ds);
+    html+=`<div class="mcell${isToday?' today':''}"><div class="mcell-num">${d}</div>${dt.slice(0,2).map(t=>`<div class="day-task-dot ${t.status==='done'?'dot-done':'dot-progress'}" onclick="openModal('${t.id}')">${esc(t.title)}</div>`).join('')}${dt.length>2?`<div style="font-size:10px;color:var(--muted)">+${dt.length-2}</div>`:''}</div>`;
+  }
+  const rem=(7-((firstDay+daysInMonth)%7))%7;
+  for(let i=1;i<=rem;i++) html+=`<div class="mcell other-month"><div class="mcell-num">${i}</div></div>`;
+  return html+`</div>`;
+}
+
+function navPrev(type){if(type==='week')navDate.setDate(navDate.getDate()-7);else navDate.setMonth(navDate.getMonth()-1);render()}
+function navNext(type){if(type==='week')navDate.setDate(navDate.getDate()+7);else navDate.setMonth(navDate.getMonth()+1);render()}
+function fmt(ds){if(!ds)return'';const[y,m,d]=ds.split('-');return`${d} ${MONTHS_S[+m-1]} ${y}`}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+// Initialize
+load();
+render();
+</script>
+</body>
+</html>

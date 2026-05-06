@@ -23,12 +23,10 @@
 html, body { height: 100%; margin: 0; }
 body { font-family: 'Avenir Next', 'Avenir', 'Century Gothic', sans-serif; background: var(--bg); color: var(--text); display: flex; }
 
-.sidebar { width: 250px; background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; overflow-y: auto; transition: all 0.3s; }
-.sidebar.collapsed { width: 60px; padding: 1rem 0.5rem; }
-.sidebar.collapsed .nav-text { display: none; }
+.sidebar { width: 250px; background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; overflow-y: auto; }
 
-.sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-.toggle-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text); padding: 4px; }
+.sidebar-header { margin-bottom: 1.5rem; }
+.sidebar-title { font-size: 24px; font-weight: 600; color: var(--accent); }
 
 .nav-menu { display: flex; flex-direction: column; gap: 8px; }
 .nav-item { padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; font-weight: 500; }
@@ -144,8 +142,7 @@ body { font-family: 'Avenir Next', 'Avenir', 'Century Gothic', sans-serif; backg
 
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div style="font-size: 20px; font-weight: 600; color: var(--accent);">my</div>
-    <button class="toggle-btn" onclick="toggleSidebar()" title="Toggle">≡</button>
+    <div class="sidebar-title">my tasks</div>
   </div>
   <nav class="nav-menu">
     <div class="nav-item active" onclick="switchView('dashboard')">
@@ -230,30 +227,35 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 const MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DEFAULT_COLORS=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2'];
 
-let tasks=[],categories=[],view='dashboard',editId=null,navDate=new Date(),sidebarCollapsed=false;
+let tasks=[],categories=[],view='dashboard',editId=null,navDate=new Date();
 
 function load(){
   const stored=localStorage.getItem('mytasks');
   const catStored=localStorage.getItem('categories');
+  
   tasks=stored?JSON.parse(stored):[
     {id:'1',title:'Design dashboard UI',date:'2025-05-10',category:'Work',status:'on progress',note:''},
     {id:'2',title:'Review code',date:'2025-05-08',category:'Work',status:'on progress',note:''},
     {id:'3',title:'Grocery shopping',date:'2025-05-07',category:'Shopping',status:'done',note:''},
     {id:'4',title:'Update portfolio',date:'2025-05-15',category:'Personal',status:'on progress',note:''}
   ];
-  categories=catStored?JSON.parse(catStored):[
-    {name:'Work',color:'#4ECDC4'},{name:'Personal',color:'#FF6B6B'},{name:'Health',color:'#45B7D1'},{name:'Shopping',color:'#FFA07A'}
-  ];
+  
+  if(catStored){
+    categories=JSON.parse(catStored);
+  }else{
+    categories=[
+      {name:'Work',color:'#4ECDC4'},
+      {name:'Personal',color:'#FF6B6B'},
+      {name:'Health',color:'#45B7D1'},
+      {name:'Shopping',color:'#FFA07A'}
+    ];
+    save();
+  }
 }
 
 function save(){
   localStorage.setItem('mytasks',JSON.stringify(tasks));
   localStorage.setItem('categories',JSON.stringify(categories));
-}
-
-function toggleSidebar(){
-  sidebarCollapsed=!sidebarCollapsed;
-  document.getElementById('sidebar').classList.toggle('collapsed');
 }
 
 function switchView(v){
@@ -313,7 +315,11 @@ function addCategory(){
   if(!n){alert('Enter name');return}
   if(categories.find(c=>c.name===n)){alert('Exists');return}
   categories.push({name:n,color:DEFAULT_COLORS[categories.length%DEFAULT_COLORS.length]});
-  save();inp.value='';renderCategories();updateCategorySelect();
+  save();
+  inp.value='';
+  renderCategories();
+  updateCategorySelect();
+  render();
 }
 
 function deleteCategory(i){

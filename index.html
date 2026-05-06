@@ -26,9 +26,12 @@
 html,body{height:100%;margin:0}
 body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:var(--bg);color:var(--text);display:flex}
 
-.sidebar{width:250px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;overflow-y:auto;transition:all 0.3s}
-.sidebar.collapsed{width:60px}
+.sidebar{width:250px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;overflow-y:auto;transition:all 0.3s;position:relative;min-width:60px}
+.sidebar.collapsed{width:60px;padding:1rem 0.5rem}
 .sidebar.collapsed .nav-text{display:none}
+.sidebar.collapsed .logo{font-size:20px;justify-content:center}
+.sidebar.collapsed .toggle-btn{padding:6px}
+.sidebar.collapsed .nav-item{justify-content:center;padding:12px 8px}
 
 .sidebar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
 .logo{font-size:24px;font-weight:600;color:var(--accent)}
@@ -149,8 +152,11 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo">my tasks</div>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="logo" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+      <span style="min-width:30px">my</span>
+      <span style="flex:1"></span>
+    </div>
+    <button class="toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
   </div>
   <nav class="nav-menu">
     <div class="nav-item active" onclick="switchView('dashboard')">
@@ -268,7 +274,12 @@ function save(){
 
 function toggleSidebar(){
   sidebarCollapsed=!sidebarCollapsed;
-  document.getElementById('sidebar').classList.toggle('collapsed');
+  const sidebar=document.getElementById('sidebar');
+  if(sidebarCollapsed){
+    sidebar.classList.add('collapsed');
+  }else{
+    sidebar.classList.remove('collapsed');
+  }
 }
 
 function switchView(v){

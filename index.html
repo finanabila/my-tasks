@@ -30,7 +30,10 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .site-title{font-size:34px;font-weight:600;color:var(--text);line-height:1.1;letter-spacing:-0.5px}
 .site-title em{font-style:italic;color:var(--accent);font-weight:300}
-.date-chip{display:inline-block;margin-top:8px;font-size:11px;color:var(--muted);letter-spacing:0.06em;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:3px 12px}
+.header-right{display:flex;gap:1rem;align-items:flex-start}
+
+.settings-btn{padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:30px;cursor:pointer;font-size:18px;transition:all 0.2s;color:var(--text)}
+.settings-btn:hover{background:var(--border);transform:rotate(15deg)}
 
 .tabs{display:flex;gap:3px;background:var(--border);border-radius:30px;padding:3px;align-self:flex-start;margin-top:4px}
 .tab{padding:5px 16px;font-size:12px;font-family:inherit;border:none;background:transparent;border-radius:30px;cursor:pointer;color:var(--muted);transition:all 0.2s;letter-spacing:0.03em}
@@ -61,9 +64,10 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 .task-header{display:flex;align-items:flex-start;gap:10px}
 .task-title{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.5;letter-spacing:0.01em}
 .task-title.done{text-decoration:line-through;color:var(--muted);font-weight:400}
-.badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:30px;white-space:nowrap;letter-spacing:0.02em}
+.badge{display:inline-block;font-size:11px;padding:4px 10px;border-radius:30px;white-space:nowrap;letter-spacing:0.02em;font-weight:500;margin-left:6px}
 .badge-progress{background:var(--lavender);color:var(--lav-dark)}
 .badge-done{background:transparent;color:var(--muted);border:1px solid var(--muted)}
+.badge-category{font-size:10px;padding:2px 8px;border-radius:4px;color:#fff;margin-right:4px}
 .task-note{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6}
 .task-meta{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
 .task-date{font-size:11px;color:var(--muted);letter-spacing:0.02em}
@@ -107,7 +111,7 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 .modal-bg{display:none;position:fixed;inset:0;z-index:100;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal-backdrop{position:absolute;inset:0;background:rgba(250,248,245,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.modal{position:relative;z-index:1;background:var(--surface);border-radius:22px;border:1px solid var(--border);padding:1.75rem;width:380px;max-width:94vw;box-shadow:0 8px 40px rgba(53,46,39,0.1)}
+.modal{position:relative;z-index:1;background:var(--surface);border-radius:22px;border:1px solid var(--border);padding:1.75rem;width:380px;max-width:94vw;box-shadow:0 8px 40px rgba(53,46,39,0.1);max-height:80vh;overflow-y:auto}
 .modal h2{font-size:24px;font-weight:600;color:var(--text);margin-bottom:1.25rem;letter-spacing:-0.3px}
 .modal h2 em{font-style:italic;color:var(--accent);font-weight:300}
 .form-group{margin-bottom:14px}
@@ -119,6 +123,20 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 .btn-cancel{padding:8px 18px;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:30px;background:transparent;cursor:pointer;color:var(--muted)}
 .btn-save{padding:8px 22px;font-size:13px;font-family:inherit;border:none;border-radius:30px;background:var(--text);cursor:pointer;color:var(--bg);font-weight:500;transition:all 0.2s;letter-spacing:0.02em}
 .btn-save:hover{background:#5a4a3a}
+
+.categories-list{margin:1rem 0}
+.category-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;justify-content:space-between}
+.category-color{width:16px;height:16px;border-radius:4px;cursor:pointer}
+.category-name{flex:1;font-size:13px;color:var(--text);font-weight:500}
+.category-actions{display:flex;gap:4px}
+.category-btn{padding:4px 8px;font-size:11px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--muted);transition:all 0.15s}
+.category-btn:hover{background:var(--border);color:var(--text)}
+.category-btn.delete:hover{border-color:var(--pink);color:var(--pink-dark)}
+
+.new-category-input{display:flex;gap:6px}
+.new-category-input input{flex:1}
+.new-category-input button{padding:6px 12px;font-size:12px;background:var(--text);color:var(--bg);border:none;border-radius:8px;cursor:pointer;font-weight:500}
+.new-category-input button:hover{background:#5a4a3a}
 </style>
 </head>
 <body>
@@ -127,18 +145,21 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
     <div class="header-top">
       <div>
         <h1 class="site-title">my <em>tasks</em></h1>
-        <div class="date-chip">✓ Ready to use</div>
       </div>
-      <div class="tabs">
-        <button class="tab active" onclick="switchView('list')">Dashboard</button>
-        <button class="tab" onclick="switchView('week')">Weekly</button>
-        <button class="tab" onclick="switchView('month')">Monthly</button>
+      <div class="header-right">
+        <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+        <div class="tabs">
+          <button class="tab active" onclick="switchView('list')">Dashboard</button>
+          <button class="tab" onclick="switchView('week')">Weekly</button>
+          <button class="tab" onclick="switchView('month')">Monthly</button>
+        </div>
       </div>
     </div>
   </div>
 
   <div id="content"></div>
 
+  <!-- TASK MODAL -->
   <div class="modal-bg" id="modal">
     <div class="modal-backdrop" onclick="closeModal()"></div>
     <div class="modal">
@@ -150,6 +171,12 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
       <div class="form-group">
         <label>Date</label>
         <input type="date" id="f-date">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="f-category">
+          <option value="">None</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Status</label>
@@ -168,6 +195,30 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
       </div>
     </div>
   </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-bg" id="settings-modal">
+    <div class="modal-backdrop" onclick="closeSettings()"></div>
+    <div class="modal">
+      <h2>Settings & <em>Categories</em></h2>
+      
+      <h3 style="font-size:16px;margin-top:1.5rem;margin-bottom:1rem;color:var(--text);font-weight:600">Manage Categories</h3>
+      
+      <div class="categories-list" id="categories-list"></div>
+
+      <div style="margin:1rem 0;padding-top:1rem;border-top:1px solid var(--border)">
+        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:8px;letter-spacing:0.07em;text-transform:uppercase">Add New Category</label>
+        <div class="new-category-input">
+          <input type="text" id="new-category-input" placeholder="Category name" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px">
+          <button onclick="addCategory()">Add</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:1.5rem">
+        <button class="btn-cancel" onclick="closeSettings()">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -175,7 +226,10 @@ const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+const DEFAULT_COLORS=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2'];
+
 let tasks=[];
+let categories=[];
 let view='list';
 let dashboardFilter='all';
 let editId=null;
@@ -183,34 +237,49 @@ let navDate=new Date();
 
 function load(){
   const stored=localStorage.getItem('mytasks');
+  const catStored=localStorage.getItem('categories');
+  
   tasks=stored?JSON.parse(stored):[
-    {id:'1',title:'Desain dashboard UI',date:'2025-05-06',status:'done',note:'Responsive layout'},
-    {id:'2',title:'Review kode tim',date:'2025-05-07',status:'on progress',note:''},
-    {id:'3',title:'Fix responsive layout',date:'2025-05-08',status:'on progress',note:''},
-    {id:'4',title:'Update portfolio',date:'2025-05-05',status:'done',note:''}
+    {id:'1',title:'Desain dashboard UI',date:'2025-05-06',category:'Work',status:'done',note:'Responsive layout'},
+    {id:'2',title:'Review kode tim',date:'2025-05-07',category:'Work',status:'on progress',note:''},
+    {id:'3',title:'Fix responsive layout',date:'2025-05-08',category:'Work',status:'on progress',note:''},
+    {id:'4',title:'Update portfolio',date:'2025-05-05',category:'Personal',status:'done',note:''}
+  ];
+  
+  categories=catStored?JSON.parse(catStored):[
+    {name:'Work',color:'#4ECDC4'},
+    {name:'Personal',color:'#FF6B6B'},
+    {name:'Health',color:'#45B7D1'},
+    {name:'Shopping',color:'#FFA07A'}
   ];
 }
 
-function save(){localStorage.setItem('mytasks',JSON.stringify(tasks))}
+function save(){
+  localStorage.setItem('mytasks',JSON.stringify(tasks));
+  localStorage.setItem('categories',JSON.stringify(categories));
+}
 
 function switchView(v){view=v;navDate=new Date();document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');render()}
-
 function setDashboardFilter(f){dashboardFilter=f;render()}
-
 function filtered(){return tasks.filter(t=>dashboardFilter==='all'||t.status===dashboardFilter).sort((a,b)=>a.date>b.date?1:-1)}
+
+function getCategoryColor(name){const cat=categories.find(c=>c.name===name);return cat?cat.color:'#ccc'}
 
 function openModal(id){
   editId=id||null;
+  updateCategorySelect();
   if(id){
     const t=tasks.find(x=>x.id===id);
     document.getElementById('f-title').value=t.title;
     document.getElementById('f-date').value=t.date;
+    document.getElementById('f-category').value=t.category||'';
     document.getElementById('f-status').value=t.status;
     document.getElementById('f-note').value=t.note||'';
     document.getElementById('modal-title').innerHTML='edit <em>task</em>';
   } else {
     document.getElementById('f-title').value='';
     document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('f-category').value='';
     document.getElementById('f-status').value='on progress';
     document.getElementById('f-note').value='';
     document.getElementById('modal-title').innerHTML='tambah <em>task</em>';
@@ -221,21 +290,101 @@ function openModal(id){
 
 function closeModal(){document.getElementById('modal').classList.remove('open')}
 
+function openSettings(){
+  renderCategories();
+  document.getElementById('settings-modal').classList.add('open');
+}
+
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open')}
+
+function updateCategorySelect(){
+  const select=document.getElementById('f-category');
+  select.innerHTML='<option value="">None</option>';
+  categories.forEach(cat=>{
+    const opt=document.createElement('option');
+    opt.value=cat.name;
+    opt.textContent=cat.name;
+    select.appendChild(opt);
+  });
+}
+
+function renderCategories(){
+  const list=document.getElementById('categories-list');
+  list.innerHTML=categories.map((cat,idx)=>`
+    <div class="category-item">
+      <div class="category-color" style="background:${cat.color}" onclick="changeCategoryColor(${idx})" title="Click to change color"></div>
+      <div class="category-name">${cat.name}</div>
+      <div class="category-actions">
+        <button class="category-btn delete" onclick="deleteCategory(${idx})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addCategory(){
+  const input=document.getElementById('new-category-input');
+  const name=input.value.trim();
+  if(!name){alert('Please enter category name');return}
+  if(categories.find(c=>c.name===name)){alert('Category already exists');return}
+  
+  categories.push({
+    name,
+    color:DEFAULT_COLORS[categories.length%DEFAULT_COLORS.length]
+  });
+  save();
+  input.value='';
+  renderCategories();
+  updateCategorySelect();
+  render();
+}
+
+function deleteCategory(idx){
+  const name=categories[idx].name;
+  if(!confirm(`Delete category "${name}"?`))return;
+  tasks=tasks.map(t=>t.category===name?{...t,category:''}:t);
+  categories.splice(idx,1);
+  save();
+  renderCategories();
+  updateCategorySelect();
+  render();
+}
+
+function changeCategoryColor(idx){
+  const currentColor=categories[idx].color;
+  const colorIdx=DEFAULT_COLORS.indexOf(currentColor);
+  const nextIdx=(colorIdx+1)%DEFAULT_COLORS.length;
+  categories[idx].color=DEFAULT_COLORS[nextIdx];
+  save();
+  renderCategories();
+  render();
+}
+
 function saveTask(){
   const title=document.getElementById('f-title').value.trim();
   if(!title){document.getElementById('f-title').focus();return}
+  
   if(editId){
     const t=tasks.find(x=>x.id===editId);
-    t.title=title;t.date=document.getElementById('f-date').value;t.status=document.getElementById('f-status').value;t.note=document.getElementById('f-note').value.trim();
+    t.title=title;
+    t.date=document.getElementById('f-date').value;
+    t.category=document.getElementById('f-category').value||'';
+    t.status=document.getElementById('f-status').value;
+    t.note=document.getElementById('f-note').value.trim();
   } else {
-    tasks.push({id:Date.now()+'',title,date:document.getElementById('f-date').value,status:document.getElementById('f-status').value,note:document.getElementById('f-note').value.trim()});
+    tasks.push({
+      id:Date.now()+'',
+      title,
+      date:document.getElementById('f-date').value,
+      category:document.getElementById('f-category').value||'',
+      status:document.getElementById('f-status').value,
+      note:document.getElementById('f-note').value.trim()
+    });
   }
   save();closeModal();render();
 }
 
-function deleteTask(id){if(confirm('Hapus task ini?')){tasks=tasks.filter(t=>t.id!==id);save();render()}}
-
-function toggleStatus(id){const t=tasks.find(x=>x.id===id);t.status=t.status==='done'?'on progress':'done';save();render()}
+function deleteTask(id){if(confirm('Delete this task?')){tasks=tasks.filter(t=>t.id!==id);save();render()}}
+function toggleStatus(id){const t=tasks.find(x=>x.id===id);if(t){t.status=t.status==='done'?'on progress':'done';save();render()}}
 
 function render(){
   const el=document.getElementById('content');
@@ -252,7 +401,8 @@ function renderList(){
   let html=`<div class="dashboard-header"><span class="dashboard-title">Dashboard</span><div class="dashboard-filters"><button class="dashboard-filter ${dashboardFilter==='all'?'active':''}" onclick="setDashboardFilter('all')">All Tasks</button><button class="dashboard-filter ${dashboardFilter==='on progress'?'active':''}" onclick="setDashboardFilter('on progress')">On Progress</button><button class="dashboard-filter ${dashboardFilter==='done'?'active':''}" onclick="setDashboardFilter('done')">Done</button></div></div>`;
   html+=`<div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div>`;
   if(!ft.length) return html+`<div class="empty-state"><div class="empty-title">nothing here yet</div><p>klik "+ tambah task" untuk mulai<br>mencatat kegiatanmu ✨</p></div>`;
-  return html+ft.map(t=>`<div class="task-card${t.status==='done'?' is-done':''}"><div class="task-inner"><div class="task-header"><div class="task-title${t.status==='done'?' done':''}">${esc(t.title)}</div><span class="badge ${t.status==='done'?'badge-done':'badge-progress'}">${t.status}</span></div>${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}<div class="task-meta"><span class="task-date">${fmt(t.date)}</span><button class="action-btn" onclick="toggleStatus('${t.id}')">${t.status==='done'?'↩ reopen':'✓ done'}</button><button class="action-btn" onclick="openModal('${t.id}')">edit</button><button class="delete-btn" onclick="deleteTask('${t.id}')">hapus</button></div></div></div>`).join('');
+  return html+ft.map(t=>`<div class="task-card${t.status==='done'?' is-done':''}"><div class="task-inner"><div class="task-header">${t.category?`<span class="badge-category" style="background:${getCategoryColor(t.category)}">${t.category}</span>`:''}
+    <div class="task-title${t.status==='done'?' done':''}">${esc(t.title)}</div><span class="badge ${t.status==='done'?'badge-done':'badge-progress'}">${t.status}</span></div>${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}<div class="task-meta"><span class="task-date">${fmt(t.date)}</span><button class="action-btn" onclick="toggleStatus('${t.id}')">${t.status==='done'?'↩ reopen':'✓ done'}</button><button class="action-btn" onclick="openModal('${t.id}')">edit</button><button class="delete-btn" onclick="deleteTask('${t.id}')">delete</button></div></div></div>`).join('');
 }
 
 function renderWeek(){
@@ -277,7 +427,7 @@ function navNext(type){if(type==='week')navDate.setDate(navDate.getDate()+7);els
 function fmt(ds){if(!ds)return'';const[y,m,d]=ds.split('-');return`${d} ${MONTHS_S[+m-1]} ${y}`}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSettings()}});
 
 load();
 render();

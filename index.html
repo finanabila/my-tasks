@@ -91,10 +91,13 @@ body{font-family:'Avenir Next','Avenir','Century Gothic',sans-serif;background:v
 
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem}
 .month-day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
-.mcell{min-height:58px;border:1px solid var(--border);border-radius:10px;padding:5px 6px;background:var(--surface);overflow-y:auto}
+.mcell{min-height:80px;border:1px solid var(--border);border-radius:10px;padding:6px;background:var(--surface);overflow-y:auto}
 .mcell.today{border-color:var(--accent);background:#fffbf4}
-.mcell-num{font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:500}
+.mcell-num{font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
 .mcell.today .mcell-num{color:var(--accent)}
+.mcell-task{font-size:10px;padding:3px 4px;border-radius:4px;margin-bottom:2px;white-space:normal;word-wrap:break-word;line-height:1.2;cursor:pointer}
+.mcell-task.progress{background:var(--lavender);color:var(--lav-dark)}
+.mcell-task.done{background:transparent;color:var(--muted);text-decoration:line-through;border:1px solid var(--muted)}
 .other-month{opacity:0.28}
 
 .empty-state{text-align:center;padding:4rem 1rem;color:var(--muted)}
@@ -178,7 +181,6 @@ let dashboardFilter='all';
 let editId=null;
 let navDate=new Date();
 
-// Load dari localStorage
 function load(){
   const stored=localStorage.getItem('mytasks');
   tasks=stored?JSON.parse(stored):[
@@ -189,15 +191,13 @@ function load(){
   ];
 }
 
-// Save ke localStorage
 function save(){localStorage.setItem('mytasks',JSON.stringify(tasks))}
 
-function switchView(v){view=v;navDate=new Date();render()}
+function switchView(v){view=v;navDate=new Date();document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');render()}
+
 function setDashboardFilter(f){dashboardFilter=f;render()}
 
-function filtered(){
-  return tasks.filter(t=>dashboardFilter==='all'||t.status===dashboardFilter).sort((a,b)=>a.date>b.date?1:-1);
-}
+function filtered(){return tasks.filter(t=>dashboardFilter==='all'||t.status===dashboardFilter).sort((a,b)=>a.date>b.date?1:-1)}
 
 function openModal(id){
   editId=id||null;
@@ -224,37 +224,18 @@ function closeModal(){document.getElementById('modal').classList.remove('open')}
 function saveTask(){
   const title=document.getElementById('f-title').value.trim();
   if(!title){document.getElementById('f-title').focus();return}
-  
   if(editId){
     const t=tasks.find(x=>x.id===editId);
-    t.title=title;
-    t.date=document.getElementById('f-date').value;
-    t.status=document.getElementById('f-status').value;
-    t.note=document.getElementById('f-note').value.trim();
+    t.title=title;t.date=document.getElementById('f-date').value;t.status=document.getElementById('f-status').value;t.note=document.getElementById('f-note').value.trim();
   } else {
-    tasks.push({
-      id:Date.now()+'',
-      title,
-      date:document.getElementById('f-date').value,
-      status:document.getElementById('f-status').value,
-      note:document.getElementById('f-note').value.trim()
-    });
+    tasks.push({id:Date.now()+'',title,date:document.getElementById('f-date').value,status:document.getElementById('f-status').value,note:document.getElementById('f-note').value.trim()});
   }
   save();closeModal();render();
 }
 
-function deleteTask(id){
-  if(confirm('Hapus task ini?')){
-    tasks=tasks.filter(t=>t.id!==id);
-    save();render();
-  }
-}
+function deleteTask(id){if(confirm('Hapus task ini?')){tasks=tasks.filter(t=>t.id!==id);save();render()}}
 
-function toggleStatus(id){
-  const t=tasks.find(x=>x.id===id);
-  t.status=t.status==='done'?'on progress':'done';
-  save();render();
-}
+function toggleStatus(id){const t=tasks.find(x=>x.id===id);t.status=t.status==='done'?'on progress':'done';save();render()}
 
 function render(){
   const el=document.getElementById('content');
@@ -271,58 +252,23 @@ function renderList(){
   let html=`<div class="dashboard-header"><span class="dashboard-title">Dashboard</span><div class="dashboard-filters"><button class="dashboard-filter ${dashboardFilter==='all'?'active':''}" onclick="setDashboardFilter('all')">All Tasks</button><button class="dashboard-filter ${dashboardFilter==='on progress'?'active':''}" onclick="setDashboardFilter('on progress')">On Progress</button><button class="dashboard-filter ${dashboardFilter==='done'?'active':''}" onclick="setDashboardFilter('done')">Done</button></div></div>`;
   html+=`<div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div>`;
   if(!ft.length) return html+`<div class="empty-state"><div class="empty-title">nothing here yet</div><p>klik "+ tambah task" untuk mulai<br>mencatat kegiatanmu ✨</p></div>`;
-  return html+ft.map(t=>`<div class="task-card${t.status==='done'?' is-done':''}">
-    <div class="task-inner">
-      <div class="task-header">
-        <div class="task-title${t.status==='done'?' done':''}">${esc(t.title)}</div>
-        <span class="badge ${t.status==='done'?'badge-done':'badge-progress'}">${t.status}</span>
-      </div>
-      ${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}
-      <div class="task-meta">
-        <span class="task-date">${fmt(t.date)}</span>
-        <button class="action-btn" onclick="toggleStatus('${t.id}')">${t.status==='done'?'↩ reopen':'✓ done'}</button>
-        <button class="action-btn" onclick="openModal('${t.id}')">edit</button>
-        <button class="delete-btn" onclick="deleteTask('${t.id}')">hapus</button>
-      </div>
-    </div>
-  </div>`).join('');
+  return html+ft.map(t=>`<div class="task-card${t.status==='done'?' is-done':''}"><div class="task-inner"><div class="task-header"><div class="task-title${t.status==='done'?' done':''}">${esc(t.title)}</div><span class="badge ${t.status==='done'?'badge-done':'badge-progress'}">${t.status}</span></div>${t.note?`<div class="task-note">${esc(t.note)}</div>`:''}<div class="task-meta"><span class="task-date">${fmt(t.date)}</span><button class="action-btn" onclick="toggleStatus('${t.id}')">${t.status==='done'?'↩ reopen':'✓ done'}</button><button class="action-btn" onclick="openModal('${t.id}')">edit</button><button class="delete-btn" onclick="deleteTask('${t.id}')">hapus</button></div></div></div>`).join('');
 }
 
 function renderWeek(){
-  const base=new Date(navDate),dow=base.getDay();
-  const monday=new Date(base);monday.setDate(base.getDate()-dow);
-  const today=new Date().toISOString().slice(0,10);
-  const s=monday.toISOString().slice(0,10);
-  const e=new Date(monday.getTime()+6*86400000).toISOString().slice(0,10);
+  const base=new Date(navDate),dow=base.getDay();const monday=new Date(base);monday.setDate(base.getDate()-dow);const today=new Date().toISOString().slice(0,10);const s=monday.toISOString().slice(0,10);const e=new Date(monday.getTime()+6*86400000).toISOString().slice(0,10);
   let html=`<div class="nav-row"><button class="nav-btn" onclick="navPrev('week')">← prev</button><span class="nav-label">${fmt(s)} – ${fmt(e)}</span><button class="nav-btn" onclick="navNext('week')">next →</button></div><div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div><div class="week-grid">`;
-  for(let i=0;i<7;i++){
-    const d=new Date(monday.getTime()+i*86400000);
-    const ds=d.toISOString().slice(0,10);
-    const isToday=ds===today;
-    const dt=tasks.filter(t=>t.date===ds).sort((a,b)=>a.status.localeCompare(b.status));
-    html+=`<div class="day-col${isToday?' day-today':''}"><div class="day-header">${DAYS[d.getDay()]}</div><div class="day-num">${isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate()}</div><div class="day-tasks">${dt.map(t=>`<div class="day-task-dot ${t.status==='done'?'dot-done':'dot-progress'}" title="${esc(t.title)}" onclick="openModal('${t.id}')">${esc(t.title)}</div>`).join('')}</div></div>`;
-  }
+  for(let i=0;i<7;i++){const d=new Date(monday.getTime()+i*86400000);const ds=d.toISOString().slice(0,10);const isToday=ds===today;const dt=tasks.filter(t=>t.date===ds).sort((a,b)=>a.status.localeCompare(b.status));html+=`<div class="day-col${isToday?' day-today':''}"><div class="day-header">${DAYS[d.getDay()]}</div><div class="day-num">${isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate()}</div><div class="day-tasks">${dt.map(t=>`<div class="day-task-dot ${t.status==='done'?'dot-done':'dot-progress'}" title="${esc(t.title)}" onclick="openModal('${t.id}')">${esc(t.title)}</div>`).join('')}</div></div>`;}
   return html+`</div>`;
 }
 
 function renderMonth(){
-  const y=navDate.getFullYear(),m=navDate.getMonth();
-  const today=new Date().toISOString().slice(0,10);
-  const firstDay=new Date(y,m,1).getDay();
-  const daysInMonth=new Date(y,m+1,0).getDate();
-  const daysInPrev=new Date(y,m,0).getDate();
+  const y=navDate.getFullYear(),m=navDate.getMonth();const today=new Date().toISOString().slice(0,10);const firstDay=new Date(y,m,1).getDay();const daysInMonth=new Date(y,m+1,0).getDate();const daysInPrev=new Date(y,m,0).getDate();
   let html=`<div class="nav-row"><button class="nav-btn" onclick="navPrev('month')">← prev</button><span class="nav-label">${MONTHS[m]} ${y}</span><button class="nav-btn" onclick="navNext('month')">next →</button></div><div class="filter-row"><button class="add-btn" onclick="openModal()">+ tambah task</button></div>`;
-  html+=`<div class="month-day-headers">${DAYS.map(d=>`<div style="font-size:10px;text-align:center;color:var(--muted);padding:2px 0;letter-spacing:0.06em;text-transform:uppercase">${d}</div>`).join('')}</div>`;
-  html+=`<div class="month-grid">`;
+  html+=`<div class="month-day-headers">${DAYS.map(d=>`<div style="font-size:10px;text-align:center;color:var(--muted);padding:2px 0;letter-spacing:0.06em;text-transform:uppercase">${d}</div>`).join('')}</div>`;html+=`<div class="month-grid">`;
   for(let i=0;i<firstDay;i++) html+=`<div class="mcell other-month"><div class="mcell-num">${daysInPrev-firstDay+1+i}</div></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday=ds===today;
-    const dt=tasks.filter(t=>t.date===ds);
-    html+=`<div class="mcell${isToday?' today':''}"><div class="mcell-num">${d}</div>${dt.slice(0,2).map(t=>`<div class="day-task-dot ${t.status==='done'?'dot-done':'dot-progress'}" onclick="openModal('${t.id}')">${esc(t.title)}</div>`).join('')}${dt.length>2?`<div style="font-size:10px;color:var(--muted)">+${dt.length-2}</div>`:''}</div>`;
-  }
-  const rem=(7-((firstDay+daysInMonth)%7))%7;
-  for(let i=1;i<=rem;i++) html+=`<div class="mcell other-month"><div class="mcell-num">${i}</div></div>`;
+  for(let d=1;d<=daysInMonth;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const isToday=ds===today;const dt=tasks.filter(t=>t.date===ds);html+=`<div class="mcell${isToday?' today':''}"><div class="mcell-num">${d}</div>${dt.map(t=>`<div class="mcell-task ${t.status==='done'?'done':'progress'}" onclick="openModal('${t.id}')" title="${esc(t.title)}">${esc(t.title)}</div>`).join('')}</div>`;}
+  const rem=(7-((firstDay+daysInMonth)%7))%7;for(let i=1;i<=rem;i++) html+=`<div class="mcell other-month"><div class="mcell-num">${i}</div></div>`;
   return html+`</div>`;
 }
 
@@ -333,7 +279,6 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 
-// Initialize
 load();
 render();
 </script>
